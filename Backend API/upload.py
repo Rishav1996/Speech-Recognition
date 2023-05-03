@@ -1,13 +1,28 @@
 import speech_recognition as sr
 from flask import Flask,request,render_template
-import soundfile as sf
 import wave
+
 
 app=Flask(__name__)
 
 @app.route('/')
 def uploadtest():
     return render_template('index.html')
+
+@app.route('/upload-ui',methods=['POST'])
+def upload_ui():
+    write_loc='./data/temp.wav'
+    file=request.files['recording']
+    file.save(write_loc)
+
+    try:
+        r = sr.Recognizer()
+        with sr.WavFile(write_loc) as src:
+            audio=r.record(src)
+            
+        return r.recognize_google(audio)
+    except Exception as e:
+        return e
 
 @app.route('/upload',methods=['POST'])
 def upload():
@@ -29,7 +44,7 @@ def upload():
         return r.recognize_google(audio)
     except:
         return "Backend Error"
-    
+
 if __name__=='__main__':
     app.run(host='0.0.0.0',port=8000,debug=True)
 
